@@ -14,16 +14,13 @@ def menu_inicio():
         limpiar_consola()
         print("\n--- Sistema de Restaurante ---")
         print("1. Iniciar Sesión")
-        print("2. Registrarse")
-        print("3. Salir")
+        print("2. Salir")
 
         op = input("Seleccione opción: ")
 
         if op == "1":
             menu_login()
         elif op == "2":
-            menu_registrar()
-        elif op == "3":
             return
         else:
             mostrar_mensaje("error", "Opción inválida")
@@ -36,7 +33,7 @@ def menu_login():
     print()
 
     try:
-        print("Ingrese sus credenciales:")
+        print("Ingrese sus datos:")
         print("-" * 50)
         usuario = input("Usuario: ").strip()
         password = input("Contraseña: ").strip()
@@ -53,46 +50,14 @@ def menu_login():
             mostrar_mensaje("exito", f"¡Bienvenido, {empleado_logeado.nombre}!")
             print(f"Rol: {empleado_logeado.rol.capitalize()}")
             input("\nPresiona cualquier tecla para acceder al sistema...")
+
             from View.MenuPrincipal import menu_principal
             menu_principal()
+
             Global.usuario_actual = None
         else:
             mostrar_mensaje("error", "Usuario o contraseña incorrectos")
             input("\nPresiona cualquier tecla para continuar...")
 
     except Exception as error:
-        none = None
-
-def menu_registrar():
-    limpiar_consola()
-    print("         REGISTRAR NUEVO EMPLEADO")
-    print("=" * 50)
-    print()
-
-    try:
-        print("Ingrese los datos del empleado:")
-        print("-" * 50)
-        nombre = input("Nombre completo: ").strip()
-
-        print("\nRoles disponibles: administrador, cajero, cocinero")
-        rol = input("Rol: ").strip().lower()
-
-        print("\nDatos de acceso:")
-        usuario = input("Usuario: ").strip()
-        password = input("Contraseña: ").strip()
-
-        if not nombre or not rol or not usuario or not password:
-            mostrar_mensaje("error", "Todos los campos son obligatorios")
-            input("\nPresiona cualquier tecla para continuar...")
-            return
-
-        resultado = empleado_controller.crear(nombre, rol, usuario, password)
-
-        if type(resultado) is str:
-            mostrar_mensaje("error", f"✗ No se pudo registrar el empleado, motivo: {resultado}")
-        else:
-            mostrar_mensaje("exito", f"Empleado registrado exitosamente - ID: {resultado.id}")
-            mostrar_mensaje("info", "Ya puede iniciar sesión con sus credenciales")
-
-    except Exception as error:
-        none = None
+        pass

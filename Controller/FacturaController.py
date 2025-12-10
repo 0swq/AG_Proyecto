@@ -24,7 +24,6 @@ class FacturaController:
 
         factura = Factura(0, pago, "", ruc.strip(), razon_social.strip())
 
-        historial.push(f"Factura creada", deepcopy(Global.facturas), "facturas")
 
         return self.repo.agregar(factura, prefijo)
 
@@ -54,7 +53,6 @@ class FacturaController:
         if not Validador.razon_social(razon_social):
             raise ValueError("Debe proporcionar una razón social válida (entre 2 y 200 caracteres)")
 
-        historial.push(f"Factura actualizada: ID {id}", deepcopy(Global.facturas), "facturas")
 
         factura = Factura(id, pago, "", ruc.strip(), razon_social.strip())
         return self.repo.actualizar(id, factura)
@@ -63,7 +61,6 @@ class FacturaController:
         if not Validador.id_valido(id):
             raise ValueError("ID inválido")
 
-        historial.push(f"Factura eliminada: ID {id}", deepcopy(Global.facturas), "facturas")
 
         return self.repo.borrar(id)
 

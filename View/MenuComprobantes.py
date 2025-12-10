@@ -125,105 +125,76 @@ def ver_boletas():
 
 def imprimir_factura_detallada(factura):
     limpiar_consola()
-    print()
-    print("╔" + "═" * 78 + "╗")
-    print("║" + " " * 30 + "FACTURA" + " " * 41 + "║")
-    print("╠" + "═" * 78 + "╣")
-    print(f"║ Número de Factura: {factura.numero_comprobante:<57} ║")
-    print(f"║ Fecha de Emisión:  {factura.fecha_emision.strftime('%Y-%m-%d %H:%M:%S'):<57} ║")
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "DATOS DEL CLIENTE" + " " * 36 + "║")
-    print("╠" + "═" * 78 + "╣")
-    print(f"║ RUC:           {factura.ruc:<63} ║")
-    print(f"║ Razón Social:  {factura.razon_social:<63} ║")
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "DETALLE DEL PEDIDO" + " " * 35 + "║")
-    print("╠" + "═" * 78 + "╣")
+    print("\n" + "=" * 80)
+    print("                              FACTURA")
+    print("=" * 80)
+    print(f"\nNúmero de Factura: {factura.numero_comprobante}")
+    print(f"Fecha de Emisión:  {factura.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    print("\n--- DATOS DEL CLIENTE ---")
+    print(f"RUC:           {factura.ruc}")
+    print(f"Razón Social:  {factura.razon_social}")
 
     if factura.pago and factura.pago.pedido:
         pedido = factura.pago.pedido
-        print(f"║ Pedido ID:     {pedido.id:<63} ║")
+        print("\n--- DETALLE DEL PEDIDO ---")
+        print(f"Pedido ID:     {pedido.id}")
         cliente_dni = pedido.cliente.dni if pedido.cliente else "Sin cliente"
-        print(f"║ Cliente DNI:   {cliente_dni:<63} ║")
-        print(f"║ Tipo:          {pedido.tipo.capitalize():<63} ║")
-        print(f"║ Empleado:      {pedido.empleado.nombre if pedido.empleado else 'Sin empleado':<63} ║")
-        print("╠" + "═" * 78 + "╣")
+        print(f"Cliente DNI:   {cliente_dni}")
+        print(f"Tipo:          {pedido.tipo.capitalize()}")
+        print(f"Empleado:      {pedido.empleado.nombre if pedido.empleado else 'Sin empleado'}")
 
         if pedido.detalles:
-            print("║ PRODUCTOS:" + " " * 67 + "║")
-            print("╠" + "─" * 78 + "╣")
-            print(f"║ {'Producto':<35} {'Cant':<6} {'P.Unit':<12} {'Subtotal':<20} ║")
-            print("╠" + "─" * 78 + "╣")
-
+            print("\n--- PRODUCTOS ---")
             for detalle in pedido.detalles:
-                producto_nombre = detalle.producto.nombre[:33]
+                producto_nombre = detalle.producto.nombre
                 precio_unit = detalle.producto.precio
-                print(f"║ {producto_nombre:<35} {detalle.cantidad:<6} "
-                      f"S/. {precio_unit:<8.2f} S/. {detalle.subtotal:<16.2f} ║")
+                print(f"  • {producto_nombre} - Cantidad: {detalle.cantidad} - "
+                      f"Precio: S/. {precio_unit:.2f} - Subtotal: S/. {detalle.subtotal:.2f}")
 
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "INFORMACIÓN DE PAGO" + " " * 34 + "║")
-    print("╠" + "═" * 78 + "╣")
-
+    print("\n--- INFORMACIÓN DE PAGO ---")
     if factura.pago:
-        print(f"║ Método de Pago:  {factura.pago.metodo.capitalize():<59} ║")
-        print(f"║ Estado:          {factura.pago.estado.capitalize():<59} ║")
+        print(f"Método de Pago:  {factura.pago.metodo.capitalize()}")
+        print(f"Estado:          {factura.pago.estado.capitalize()}")
 
-    print("╠" + "═" * 78 + "╣")
-    print(f"║ {'TOTAL A PAGAR:':<58} S/. {factura.total:<15.2f} ║")
-    print("╚" + "═" * 78 + "╝")
-    print()
+    print(f"\nTOTAL A PAGAR: S/. {factura.total:.2f}")
+    print("=" * 80 + "\n")
 
 
 def imprimir_boleta_detallada(boleta):
     limpiar_consola()
-    print()
-    print("╔" + "═" * 78 + "╗")
-    print("║" + " " * 30 + "BOLETA" + " " * 42 + "║")
-    print("╠" + "═" * 78 + "╣")
-    print(f"║ Número de Boleta: {boleta.numero_comprobante:<58} ║")
-    print(f"║ Fecha de Emisión: {boleta.fecha_emision.strftime('%Y-%m-%d %H:%M:%S'):<58} ║")
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "DATOS DEL CLIENTE" + " " * 36 + "║")
-    print("╠" + "═" * 78 + "╣")
+    print("\n" + "=" * 80)
+    print("                              BOLETA")
+    print("=" * 80)
+    print(f"\nNúmero de Boleta: {boleta.numero_comprobante}")
+    print(f"Fecha de Emisión: {boleta.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    print("\n--- DATOS DEL CLIENTE ---")
     cliente_dni = boleta.pago.pedido.cliente.dni if boleta.pago and boleta.pago.pedido and boleta.pago.pedido.cliente else "Sin especificar"
-    print(f"║ Cliente DNI: {cliente_dni:<64} ║")
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "DETALLE DEL PEDIDO" + " " * 35 + "║")
-    print("╠" + "═" * 78 + "╣")
+    print(f"Cliente DNI: {cliente_dni}")
 
     if boleta.pago and boleta.pago.pedido:
         pedido = boleta.pago.pedido
-        print(f"║ Pedido ID:     {pedido.id:<63} ║")
-        print(f"║ Tipo:          {pedido.tipo.capitalize():<63} ║")
-        print(f"║ Empleado:      {pedido.empleado.nombre if pedido.empleado else 'Sin empleado':<63} ║")
-        print("╠" + "═" * 78 + "╣")
+        print("\n--- DETALLE DEL PEDIDO ---")
+        print(f"Pedido ID:     {pedido.id}")
+        print(f"Tipo:          {pedido.tipo.capitalize()}")
+        print(f"Empleado:      {pedido.empleado.nombre if pedido.empleado else 'Sin empleado'}")
 
         if pedido.detalles:
-            print("║ PRODUCTOS:" + " " * 67 + "║")
-            print("╠" + "─" * 78 + "╣")
-            print(f"║ {'Producto':<35} {'Cant':<6} {'P.Unit':<12} {'Subtotal':<20} ║")
-            print("╠" + "─" * 78 + "╣")
-
+            print("\n--- PRODUCTOS ---")
             for detalle in pedido.detalles:
-                producto_nombre = detalle.producto.nombre[:33]
+                producto_nombre = detalle.producto.nombre
                 precio_unit = detalle.producto.precio
-                print(f"║ {producto_nombre:<35} {detalle.cantidad:<6} "
-                      f"S/. {precio_unit:<8.2f} S/. {detalle.subtotal:<16.2f} ║")
+                print(f"  • {producto_nombre} - Cantidad: {detalle.cantidad} - "
+                      f"Precio: S/. {precio_unit:.2f} - Subtotal: S/. {detalle.subtotal:.2f}")
 
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " " * 25 + "INFORMACIÓN DE PAGO" + " " * 34 + "║")
-    print("╠" + "═" * 78 + "╣")
-
+    print("\n--- INFORMACIÓN DE PAGO ---")
     if boleta.pago:
-        print(f"║ Método de Pago:  {boleta.pago.metodo.capitalize():<59} ║")
-        print(f"║ Estado:          {boleta.pago.estado.capitalize():<59} ║")
+        print(f"Método de Pago:  {boleta.pago.metodo.capitalize()}")
+        print(f"Estado:          {boleta.pago.estado.capitalize()}")
 
-    print("╠" + "═" * 78 + "╣")
-    print(f"║ {'TOTAL A PAGAR:':<58} S/. {boleta.total:<15.2f} ║")
-    print("╚" + "═" * 78 + "╝")
-    print()
-
+    print(f"\nTOTAL A PAGAR: S/. {boleta.total:.2f}")
+    print("=" * 80 + "\n")
 
 def editar_comprobantes():
     limpiar_consola()
@@ -232,3 +203,6 @@ def editar_comprobantes():
     print()
     mostrar_mensaje("advertencia", "Funcionalidad en desarrollo")
     input("\nPresiona cualquier tecla para continuar...")
+
+from Utils.Limpiar import limpiar_consola
+

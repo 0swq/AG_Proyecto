@@ -4,11 +4,20 @@ from Estructuras.Pilas import HistorialPila
 
 historial = HistorialPila()
 
-class PedidosCola:
-    def __init__(self):
-        self.cabeza = Global.cabeza_cola_pedidos
-        self.cola = Global.cola_cola_pedidos
 
+class PedidosCola:
+    @property
+    def cabeza(self):
+        return Global.cabeza_cola_pedidos
+    @cabeza.setter
+    def cabeza(self, valor):
+        Global.cabeza_cola_pedidos = valor
+    @property
+    def cola(self):
+        return Global.cola_cola_pedidos
+    @cola.setter
+    def cola(self, valor):
+        Global.cola_cola_pedidos = valor
     def insertar_pedido(self, pedido):
         nuevo = Global.Nodo(pedido)
         if self.cabeza is None:
@@ -17,8 +26,6 @@ class PedidosCola:
         else:
             self.cola.siguiente = nuevo
             self.cola = nuevo
-        Global.cabeza_cola_pedidos = self.cabeza
-        Global.cola_cola_pedidos = self.cola
 
     def completar_pedido(self):
         if self.cabeza is None:
@@ -26,16 +33,13 @@ class PedidosCola:
             return None
         historial.push(
             "Pedido completado",
-            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola)],
-            "cola"
-        )
+            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola),
+             deepcopy(Global.facturas),deepcopy(Global.boletas)],"cola")
         pedido = self.cabeza.valor
         self.cabeza = self.cabeza.siguiente
         if self.cabeza is None:
             self.cola = None
         pedido.estado = "completado"
-        Global.cabeza_cola_pedidos = self.cabeza
-        Global.cola_cola_pedidos = self.cola
         return pedido
 
     def cancelar_pedido(self):
@@ -44,18 +48,14 @@ class PedidosCola:
             return None
         historial.push(
             "Pedido cancelado",
-            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola)],
-            "cola"
-        )
+            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola),
+             deepcopy(Global.facturas), deepcopy(Global.boletas)],"cola")
         pedido = self.cabeza.valor
         self.cabeza = self.cabeza.siguiente
         if self.cabeza is None:
             self.cola = None
         pedido.estado = "cancelado"
-        Global.cabeza_cola_pedidos = self.cabeza
-        Global.cola_cola_pedidos = self.cola
         return pedido
-
     def mostrar_cola(self):
         temp = self.cabeza
         pedidos = []
@@ -102,6 +102,4 @@ class PedidosCola:
             else:
                 self.cola.siguiente = nuevo
                 self.cola = nuevo
-        Global.cabeza_cola_pedidos = self.cabeza
-        Global.cola_cola_pedidos = self.cola
         return resultado

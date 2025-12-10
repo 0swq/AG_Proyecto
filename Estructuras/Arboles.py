@@ -28,8 +28,6 @@ def construir_arbol(lista_objetos, criterio='id'):
     for objeto in lista_objetos:
         raiz = insertar(raiz, objeto, criterio)
     return raiz
-
-
 def buscar(raiz, valor_buscado, criterio='id'):
     if raiz is None:
         return None
