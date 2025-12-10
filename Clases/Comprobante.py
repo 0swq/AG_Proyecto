@@ -2,7 +2,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 
 from Global import Global
-from Utils.GenerarNumero import generar_numero_factura
+from Utils.GenerarNumero import generar_numero_factura,generar_numero_boleta
 
 
 class ComprobanteInterface(ABC):
@@ -20,7 +20,7 @@ class ComprobanteInterface(ABC):
 class Boleta(ComprobanteInterface):
     def __init__(self, id, pago):
         super().__init__(id, pago)
-        self.numero_comprobante = generar_numero_factura(Global.ultimo_id_factura)
+        self.numero_comprobante = generar_numero_boleta(Global.ultimo_id_boleta)
         self.cliente_nombre = pago.pedido.cliente
 
     def __str__(self):

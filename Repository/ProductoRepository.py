@@ -7,8 +7,9 @@ from Estructuras.Arboles import construir_arbol, buscar
 class ProductosRepository:
     historial_recientes = deque(maxlen=10)
 
-    def __init__(self):
-        self.productos = Global.productos
+    @property
+    def productos(self):
+        return Global.productos
 
     def agregar(self, producto: Producto):
         Global.ultimo_id_producto += 1

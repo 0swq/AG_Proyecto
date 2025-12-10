@@ -1,4 +1,8 @@
-import Global.Global as Global
+from copy import deepcopy
+from Global import Global
+from Estructuras.Pilas import HistorialPila
+
+historial = HistorialPila()
 
 class PedidosCola:
     def __init__(self):
@@ -10,31 +14,47 @@ class PedidosCola:
         if self.cabeza is None:
             self.cabeza = nuevo
             self.cola = nuevo
-            return
-        self.cola.siguiente = nuevo
-        self.cola = nuevo
+        else:
+            self.cola.siguiente = nuevo
+            self.cola = nuevo
+        Global.cabeza_cola_pedidos = self.cabeza
+        Global.cola_cola_pedidos = self.cola
 
     def completar_pedido(self):
         if self.cabeza is None:
             print("No hay pedidos en espera.")
             return None
-        pedido_completado = self.cabeza.valor
+        historial.push(
+            "Pedido completado",
+            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola)],
+            "cola"
+        )
+        pedido = self.cabeza.valor
         self.cabeza = self.cabeza.siguiente
         if self.cabeza is None:
             self.cola = None
-        pedido_completado.estado="completado"
-        return pedido_completado
+        pedido.estado = "completado"
+        Global.cabeza_cola_pedidos = self.cabeza
+        Global.cola_cola_pedidos = self.cola
+        return pedido
 
     def cancelar_pedido(self):
         if self.cabeza is None:
             print("No hay pedidos en espera.")
             return None
-        pedido_cancelado = self.cabeza.valor
+        historial.push(
+            "Pedido cancelado",
+            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola)],
+            "cola"
+        )
+        pedido = self.cabeza.valor
         self.cabeza = self.cabeza.siguiente
         if self.cabeza is None:
             self.cola = None
-        pedido_cancelado.estado="cancelado"
-        return pedido_cancelado
+        pedido.estado = "cancelado"
+        Global.cabeza_cola_pedidos = self.cabeza
+        Global.cola_cola_pedidos = self.cola
+        return pedido
 
     def mostrar_cola(self):
         temp = self.cabeza
@@ -45,6 +65,11 @@ class PedidosCola:
         return pedidos
 
     def JobSequence(self):
+        historial.push(
+            "Cola optimizada",
+            [deepcopy(Global.pedidos), deepcopy(self.cabeza), deepcopy(self.cola)],
+            "cola"
+        )
         pedidos = []
         temp = self.cabeza
         while temp:
@@ -54,7 +79,6 @@ class PedidosCola:
             return []
         pedidos_ordenados = sorted(pedidos, key=lambda p: p.valor, reverse=True)
         deadline_max = max(p.deadline for p in pedidos)
-
         slots = [None] * deadline_max
         no_asignados = []
         for p in pedidos_ordenados:
@@ -68,7 +92,6 @@ class PedidosCola:
                 no_asignados.append(p)
         asignados = [p for p in slots if p is not None]
         resultado = asignados + no_asignados
-
         self.cabeza = None
         self.cola = None
         for p in resultado:

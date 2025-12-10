@@ -1,5 +1,3 @@
-from Controller import ClienteController
-from Controller.EmpleadoController import EmpleadoController
 
 #Esta clase esta hecha para contener datos en memoria de forma global y centrailzada
 
@@ -23,6 +21,7 @@ ultimo_id_factura = 0
 cabeza_cola_pedidos = None
 cola_cola_pedidos = None
 
+historial = []
 
 raiz_empleados = None
 raiz_clientes=None
@@ -31,8 +30,15 @@ raiz_boletas=None
 raiz_productos = None
 raiz_pedidos = None
 
+
+tiempos_permitidos_pedido = {
+    'salon': 40,
+    'llevar': 25,
+    'delivery': 60
+}
+
 categorias = ['entrada', 'plato_principal', 'postre', 'bebida']
-tipos_validos =['salon', 'llevar, delivery']
+tipos_validos =["salon", "llevar", "delivery"]
 metodos_validos = ['efectivo', 'tarjeta', 'transferencia']
 roles = ['admin', 'cajero']
 

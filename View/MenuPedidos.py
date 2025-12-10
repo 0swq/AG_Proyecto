@@ -1,3 +1,5 @@
+import math
+
 from Clases.Comprobante import Boleta
 from Clases.DetallePedido import DetallePedido
 from Clases.Pago import Pago
@@ -38,7 +40,8 @@ def menu_pedidos():
         print("5. Cancelar pedido")
         print("6. Optimizar cola de pedidos")
         print("7. Ver pedidos completados / comprobantes")
-        print("8. Volver")
+        print("8. Modificar pedido pendiente")
+        print("9. Volver")
 
         op = input("Seleccione opción: ")
 
@@ -57,6 +60,8 @@ def menu_pedidos():
         elif op == "7":
             ver_pedidos()
         elif op == "8":
+            editar_pedido()
+        elif op == "9":
             return
         else:
             mostrar_mensaje("error", "Opción inválida")
@@ -89,13 +94,7 @@ def crear_pedido():
                     input("\nPresiona cualquier tecla para continuar...")
                     return
                 break
-
-            mostrar_mensaje("info", "Se listarán los productos, selecciona uno para agregarlo al detalle")
-            print("         SELECCIONA UN PRODUCTO")
-            print("=" * 50)
-            print()
             MenuProductos.listar_productos()
-
             id_producto = input("Ingrese el ID del producto: ")
             producto = productos_controller.buscar_id(id_producto)
             if type(producto) is str:
@@ -194,6 +193,281 @@ def crear_pedido():
     input("Presiona cualquier tecla para continuar...")
 
 
+def editar_pedido():
+    limpiar_consola()
+    print("         EDITAR PEDIDO")
+    print("=" * 50)
+    print()
+
+    try:
+        pedidos = pedidos_cola.mostrar_cola()
+
+        if not pedidos or len(pedidos) == 0:
+            mostrar_mensaje("advertencia", "No hay pedidos pendientes en la cola")
+            input("\nPresiona cualquier tecla para continuar...")
+            return
+
+        mostrar_cola()
+        id_pedido = input("\nIngrese el ID del pedido a editar: ").strip()
+        pedido = pedido_controller.buscar_id(id_pedido)
+
+        if type(pedido) is str:
+            mostrar_mensaje("error", pedido)
+            input("\nPresiona cualquier tecla para continuar...")
+            return
+
+        if pedido.estado != "pendiente":
+            mostrar_mensaje("error", "Solo se pueden editar pedidos pendientes")
+            input("\nPresiona cualquier tecla para continuar...")
+            return
+
+        hubo_cambios = False
+
+        while True:
+            limpiar_consola()
+            print(f"         EDITANDO PEDIDO #{pedido.id}")
+            print("=" * 50)
+            print(f"Cliente: {pedido.cliente.dni}")
+            print(f"Tipo: {pedido.tipo}")
+            print(f"Total actual: ${pedido.total:.2f}")
+            print("=" * 50)
+            print()
+
+            if len(pedido.detalles) == 0:
+                mostrar_mensaje("advertencia", "Este pedido no tiene productos")
+            else:
+                print("PRODUCTOS EN EL PEDIDO:")
+                print("-" * 80)
+                for i, detalle in enumerate(pedido.detalles, 1):
+                    print(f"{i}. {detalle}")
+                print("-" * 80)
+
+            print()
+            print("OPCIONES DE EDICIÓN:")
+            print("1. Agregar producto")
+            print("2. Modificar cantidad de un producto")
+            print("3. Eliminar producto")
+            print("4. Cambiar tipo de pedido (salón/para llevar/delivery)")
+            print("5. Cambiar prioridad")
+            print("6. Guardar y salir")
+            print("7. Cancelar sin guardar")
+            print()
+
+            opcion = input("Seleccione una opción: ").strip()
+
+            if opcion == "1":
+                limpiar_consola()
+                print("         AGREGAR PRODUCTO")
+                print("=" * 50)
+                print()
+
+                MenuProductos.listar_productos()
+
+                id_producto = input("Ingrese el ID del producto: ").strip()
+                producto = productos_controller.buscar_id(id_producto)
+
+                if type(producto) is str:
+                    mostrar_mensaje("error", producto)
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                cantidad = input("Ingrese la cantidad: ").strip()
+                nuevo_detalle = detalle_controller.crear(producto, cantidad)
+
+                if type(nuevo_detalle) is str:
+                    mostrar_mensaje("error", nuevo_detalle)
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                pedido.detalles.append(nuevo_detalle)
+                _recalcular_totales_pedido(pedido)
+                hubo_cambios = True
+                mostrar_mensaje("exito", "Producto agregado correctamente")
+                input("\nPresiona cualquier tecla para continuar...")
+
+            elif opcion == "2":
+                if len(pedido.detalles) == 0:
+                    mostrar_mensaje("error", "No hay productos para modificar")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                limpiar_consola()
+                print("         MODIFICAR CANTIDAD")
+                print("=" * 50)
+                print()
+
+                try:
+                    for i, detalle in enumerate(pedido.detalles, 1):
+                        print(f"{i}. {detalle}")
+                    print()
+                    indice = int(input("Ingrese el número del producto a modificar: ")) - 1
+
+                    if indice < 0 or indice >= len(pedido.detalles):
+                        mostrar_mensaje("error", "Número inválido")
+                        input("\nPresiona cualquier tecla para continuar...")
+                        continue
+
+                    detalle_a_modificar = pedido.detalles[indice]
+                    print(f"\nProducto seleccionado: {detalle_a_modificar.producto.nombre}")
+                    print(f"Cantidad actual: {detalle_a_modificar.cantidad}")
+                    print()
+
+                    nueva_cantidad = input("Ingrese la nueva cantidad: ").strip()
+
+                    if not Validador.cantidad(nueva_cantidad):
+                        mostrar_mensaje("error", "Cantidad inválida")
+                        input("\nPresiona cualquier tecla para continuar...")
+                        continue
+
+                    nueva_cantidad = int(nueva_cantidad)
+                    detalle_a_modificar.actualizar_cantidad(nueva_cantidad)
+                    _recalcular_totales_pedido(pedido)
+                    hubo_cambios = True
+                    mostrar_mensaje("exito", "Cantidad modificada correctamente")
+                    input("\nPresiona cualquier tecla para continuar...")
+
+                except ValueError:
+                    mostrar_mensaje("error", "Debe ingresar un número válido")
+                    input("\nPresiona cualquier tecla para continuar...")
+
+            elif opcion == "3":
+                if len(pedido.detalles) == 0:
+                    mostrar_mensaje("error", "No hay productos para eliminar")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                if len(pedido.detalles) == 1:
+                    mostrar_mensaje("error", "No puedes eliminar el único producto. Cancela el pedido en su lugar")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                limpiar_consola()
+                print("         ELIMINAR PRODUCTO")
+                print("=" * 50)
+                print()
+
+                try:
+                    for i, detalle in enumerate(pedido.detalles, 1):
+                        print(f"{i}. {detalle}")
+
+                    print()
+                    indice = int(input("Ingrese el número del producto a eliminar: ")) - 1
+
+                    if indice < 0 or indice >= len(pedido.detalles):
+                        mostrar_mensaje("error", "Número inválido")
+                        input("\nPresiona cualquier tecla para continuar...")
+                        continue
+
+                    detalle_eliminado = pedido.detalles[indice]
+                    confirmar = pedir_confirmacion(
+                        f"¿Eliminar {detalle_eliminado.producto.nombre} del pedido?"
+                    )
+
+                    if confirmar:
+                        pedido.detalles.pop(indice)
+                        _recalcular_totales_pedido(pedido)
+                        hubo_cambios = True
+                        mostrar_mensaje("exito", "Producto eliminado correctamente")
+
+                    input("\nPresiona cualquier tecla para continuar...")
+
+                except ValueError:
+                    mostrar_mensaje("error", "Debe ingresar un número válido")
+                    input("\nPresiona cualquier tecla para continuar...")
+
+            elif opcion == "4":
+                limpiar_consola()
+                print("         CAMBIAR TIPO DE PEDIDO")
+                print("=" * 50)
+                print()
+                print(f"Tipo actual: {pedido.tipo}")
+                print()
+                print("Tipos disponibles:", ", ".join(Global.tipos_validos))
+                print()
+
+                nuevo_tipo = input("Ingrese el nuevo tipo: ").strip().lower()
+
+                if not Validador.tipo_pedido(nuevo_tipo):
+                    mostrar_mensaje("error", f"Tipo inválido. Use: {', '.join(Global.tipos_validos)}")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                if nuevo_tipo == "delivery" and (not pedido.cliente.telefono or not pedido.cliente.direccion):
+                    mostrar_mensaje("error", "El cliente no tiene teléfono/dirección para delivery")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                pedido.tipo = nuevo_tipo
+                tiempo_permitido = Validador.tiempo_permitido_pedido(pedido.tipo)
+                pedido.deadline = math.ceil(tiempo_permitido / 5)
+
+                hubo_cambios = True
+                mostrar_mensaje("exito", f"Tipo cambiado a: {nuevo_tipo}")
+                input("\nPresiona cualquier tecla para continuar...")
+
+            elif opcion == "5":
+                limpiar_consola()
+                print("         CAMBIAR PRIORIDAD")
+                print("=" * 50)
+                print()
+                print(f"Prioridad actual: {pedido.prioridad}")
+                print()
+
+                try:
+                    nueva_prioridad = int(input("Ingrese nueva prioridad (1-5): "))
+
+                    if not Validador.prioridad(nueva_prioridad):
+                        mostrar_mensaje("error", "La prioridad debe estar entre 1 y 5")
+                        input("\nPresiona cualquier tecla para continuar...")
+                        continue
+
+                    pedido.prioridad = nueva_prioridad
+                    hubo_cambios = True
+                    mostrar_mensaje("exito", f"Prioridad cambiada a: {nueva_prioridad}")
+                    input("\nPresiona cualquier tecla para continuar...")
+
+                except ValueError:
+                    mostrar_mensaje("error", "Debe ingresar un número")
+                    input("\nPresiona cualquier tecla para continuar...")
+
+            elif opcion == "6":
+                if len(pedido.detalles) == 0:
+                    mostrar_mensaje("error", "El pedido debe tener al menos un producto")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    continue
+
+                confirmar = pedir_confirmacion("¿Guardar los cambios realizados?")
+                if confirmar:
+                    if hubo_cambios:
+                        mostrar_mensaje("info", "Reoptimizando cola de pedidos...")
+                        pedidos_cola.JobSequence()
+                        mostrar_mensaje("exito", "Cambios guardados y cola optimizada")
+                    else:
+                        mostrar_mensaje("info", "No hubo cambios que guardar")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    return
+
+            elif opcion == "7":
+                confirmar = pedir_confirmacion("¿Salir sin guardar cambios?")
+                if confirmar:
+                    mostrar_mensaje("info", "Cambios descartados")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    return
+
+            else:
+                mostrar_mensaje("error", "Opción inválida")
+                input("\nPresiona cualquier tecla para continuar...")
+
+    except Exception as error:
+        mostrar_mensaje("error", f"Error al editar pedido: {str(error)}")
+        input("\nPresiona cualquier tecla para continuar...")
+
+
+def _recalcular_totales_pedido(pedido):
+    pedido.total = sum(d.subtotal for d in pedido.detalles if d.subtotal is not None)
+    pedido.valor = sum(d.rentabilidad for d in pedido.detalles if d.rentabilidad is not None)
+    pedido.tiempo_preparacion = max((d.tiempo_total for d in pedido.detalles if d.tiempo_total is not None), default=0)
+
 def mostrar_cola():
     limpiar_consola()
     print("         PEDIDOS EN COLA")
@@ -205,7 +479,6 @@ def mostrar_cola():
         if not pedidos:
             mostrar_mensaje("advertencia", "No hay pedidos registrados")
         else:
-            print(Global.usuario_actual)
             print(
                 f"\n{'ID':<5} {'Cliente':<20} {'Empleado':<20} {'Tipo':<12} {'Estado':<15} {'Total':<10} {'Prior':<6}")
             print("-" * 95)
@@ -394,7 +667,7 @@ def optimizar_cola():
 
     try:
         mostrar_mensaje("info", "Cola actual")
-        pedidos_cola.mostrar_cola()
+        mostrar_cola()
         input("Presiona cualquier tecla para la optimización...")
         prueba = pedir_confirmacion(
             "¿Desea optimizar la cola de pedidos?, eso modificará su orden y no será posible revertirlo")

@@ -8,8 +8,9 @@ from Utils.GenerarNumero import generar_numero_boleta
 class BoletaRepository:
     historial_recientes = deque(maxlen=10)
 
-    def __init__(self):
-        self.items = Global.boletas
+    @property
+    def items(self):
+        return Global.boletas
 
     def agregar(self, boleta: Boleta, prefijo="BOL"):
         Global.ultimo_id_boleta += 1

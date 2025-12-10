@@ -6,9 +6,10 @@ from Estructuras.Arboles import construir_arbol, buscar
 
 class ClientesRepository:
     historial_recientes = deque(maxlen=10)
-    def __init__(self):
-        self.clientes = Global.clientes
 
+    @property
+    def clientes(self):
+        return Global.clientes
 
     def agregar(self, cliente: Cliente):
         Global.ultimo_id_cliente += 1

@@ -6,8 +6,10 @@ from Utils.GenerarNumero import generar_numero_factura
 
 class FacturaRepository:
     historial_recientes = deque(maxlen=10)
-    def __init__(self):
-        self.items = Global.facturas
+
+    @property
+    def items(self):
+        return Global.facturas
 
     def agregar(self, factura: Factura, prefijo="FAC"):
         Global.ultimo_id_factura += 1

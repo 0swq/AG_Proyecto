@@ -96,6 +96,3 @@ def menu_registrar():
 
     except Exception as error:
         none = None
-
-    print()
-    input("Presiona cualquier tecla para continuar...")

@@ -1,6 +1,11 @@
+from copy import deepcopy
 from Repository.ClienteRepository import ClientesRepository
 from Clases.Cliente import Cliente
 from Utils.Validador import Validador
+from Estructuras.Pilas import HistorialPila
+from Global import Global
+
+historial = HistorialPila()
 
 
 class ClientesController:
@@ -22,8 +27,10 @@ class ClientesController:
 
         cliente = Cliente(0, dni.strip(), telefono.strip() if telefono else None,
                           direccion.strip() if direccion else None)
-        return self.repo.agregar(cliente)
 
+        historial.push(f"Cliente creado: DNI {dni}", deepcopy(Global.clientes), "clientes")
+
+        return self.repo.agregar(cliente)
 
     def obtener_todos(self):
         return self.repo.listar_todos()
@@ -41,6 +48,8 @@ class ClientesController:
         if direccion and not Validador.direccion(direccion):
             return "Dirección inválida. Debe contener entre 5 y 200 caracteres"
 
+        historial.push(f"Cliente actualizado: ID {id}", deepcopy(Global.clientes), "clientes")
+
         cliente = Cliente(id, dni, telefono, direccion)
         resultado = self.repo.actualizar(id, cliente)
 
@@ -53,6 +62,9 @@ class ClientesController:
             id = int(id)
         except ValueError:
             return "El id no tiene un formato correcto"
+
+        historial.push(f"Cliente eliminado: ID {id}", deepcopy(Global.clientes), "clientes")
+
         if not self.repo.borrar(id):
             return f"No se encontró el registro con el id: {id}"
         return True
@@ -66,7 +78,8 @@ class ClientesController:
         if not resultado:
             return f"No se encontró el registro con el id: {id}"
         return resultado
-    def buscar_dni(self,dni):
+
+    def buscar_dni(self, dni):
         if not Validador.dni(dni):
             return "DNI inválido. Debe contener 8 dígitos"
         resultado = self.repo.buscar_dni(dni)

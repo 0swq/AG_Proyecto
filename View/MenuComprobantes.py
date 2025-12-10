@@ -18,8 +18,7 @@ def menu_comprobantes():
         print("\n--- Gestión de Pedidos completados y comprobantes de pago ---")
         print("1. Ver facturas / pedidos completados")
         print("2. Ver boletas / pedidos completados")
-        print("3. Editar comprobantes")
-        print("4. Volver")
+        print("3. Volver")
 
         op = input("Seleccione opción: ")
 
@@ -28,8 +27,6 @@ def menu_comprobantes():
         elif op == "2":
             ver_boletas()
         elif op == "3":
-            editar_comprobantes()
-        elif op == "4":
             return
         else:
             mostrar_mensaje("error", "Opción inválida")

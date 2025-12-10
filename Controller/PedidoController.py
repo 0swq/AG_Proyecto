@@ -1,7 +1,11 @@
+from copy import deepcopy
 from Global import Global
 from Repository.PedidoRepository import PedidoRepository
 from Clases.Pedido import Pedido
 from Utils.Validador import Validador
+from Estructuras.Pilas import HistorialPila
+
+historial = HistorialPila()
 
 
 class PedidosController:
@@ -19,6 +23,9 @@ class PedidosController:
             return "Debe proporcionar un cliente"
 
         pedido = Pedido(0, cliente, detalles, tipo.lower().strip(), estado.lower().strip(), int(prioridad))
+
+        historial.push(f"Pedido creado", deepcopy(Global.pedidos), "pedidos")
+
         return self.repo.agregar(pedido)
 
     def obtener_todos(self):
@@ -26,6 +33,7 @@ class PedidosController:
 
     def obtener_completados(self):
         return self.repo.listar_completados()
+
     def obtener_pendientes(self):
         return self.repo.listar_pendientes()
 
@@ -45,6 +53,8 @@ class PedidosController:
         if isinstance(pedido_actual, str):
             return pedido_actual
 
+        historial.push(f"Pedido actualizado: ID {id}", deepcopy(Global.pedidos), "pedidos")
+
         pedido_nuevo = Pedido(id, cliente, detalles, tipo, estado, prioridad)
         resultado = self.repo.actualizar(id, pedido_actual, pedido_nuevo)
 
@@ -57,6 +67,8 @@ class PedidosController:
             id = int(id)
         except ValueError:
             return "El id no tiene un formato correcto"
+
+        historial.push(f"Pedido eliminado: ID {id}", deepcopy(Global.pedidos), "pedidos")
 
         if not self.repo.borrar(id):
             return f"No se encontró el registro con el id: {id}"

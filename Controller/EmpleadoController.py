@@ -1,6 +1,11 @@
+from copy import deepcopy
 from Repository.EmpleadoRepository import EmpleadoRepository
 from Clases.Empleado import Empleado
 from Utils.Validador import Validador
+from Estructuras.Pilas import HistorialPila
+from Global import Global
+
+historial = HistorialPila()
 
 
 class EmpleadoController:
@@ -10,7 +15,7 @@ class EmpleadoController:
     def crear(self, nombre, rol, usuario=None, password=None):
         if not Validador.nombre(nombre):
             return "Nombre inválido. Debe contener solo letras y espacios (2-50 caracteres)"
-        if type(self.buscar_por_usuario(usuario))==Empleado:
+        if type(self.buscar_por_usuario(usuario)) == Empleado:
             return "Ya existe un empleado con ese usuario"
         if not Validador.rol(rol):
             return "Rol inválido. Debe ser 'administrador', 'cajero' o 'cocinero'"
@@ -30,6 +35,9 @@ class EmpleadoController:
         empleado = Empleado(0, nombre.strip(), rol.lower().strip(),
                             usuario.strip() if usuario else None,
                             password)
+
+        historial.push(f"Empleado creado: {nombre}", deepcopy(Global.empleados), "empleados")
+
         return self.repo.agregar(empleado)
 
     def obtener_todos(self):
@@ -50,6 +58,8 @@ class EmpleadoController:
         if password and not Validador.password(password):
             return "Contraseña inválida. Debe contener 6-20 caracteres con al menos una letra y un número"
 
+        historial.push(f"Empleado actualizado: ID {id}", deepcopy(Global.empleados), "empleados")
+
         empleado = Empleado(id, nombre, rol, usuario, password)
         resultado = self.repo.actualizar(id, empleado)
 
@@ -62,6 +72,9 @@ class EmpleadoController:
             id = int(id)
         except ValueError:
             return "El id no tiene un formato correcto"
+
+        historial.push(f"Empleado eliminado: ID {id}", deepcopy(Global.empleados), "empleados")
+
         if not self.repo.borrar(id):
             return f"No se encontró el registro con el id: {id}"
         return True
@@ -79,12 +92,13 @@ class EmpleadoController:
     def autenticar(self, usuario, password):
         return self.repo.autenticar(usuario, password)
 
-    def buscar_por_usuario(self,usuario):
+    def buscar_por_usuario(self, usuario):
         if not Validador.usuario(usuario):
             return "El usuario no tiene un formato correcto"
         resultado = self.repo.buscar_por_usuario(usuario)
         if not resultado:
             return f"No se encontro el registro"
         return resultado
+
     def listar_por_rol(self, rol):
         return self.repo.listar_por_rol(rol)

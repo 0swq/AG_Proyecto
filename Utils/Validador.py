@@ -125,3 +125,7 @@ class Validador:
             return int(id) > 0
         except:
             return False
+
+    @staticmethod
+    def tiempo_permitido_pedido(tipo: str) -> int:
+        return Global.tiempos_permitidos_pedido.get(tipo.lower().strip(), 40)

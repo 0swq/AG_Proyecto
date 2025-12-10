@@ -1,6 +1,11 @@
+from copy import deepcopy
 from Repository.ProductoRepository import ProductosRepository
 from Clases.Producto import Producto
 from Utils.Validador import Validador
+from Estructuras.Pilas import HistorialPila
+from Global import Global
+
+historial = HistorialPila()
 
 
 class ProductosController:
@@ -21,6 +26,9 @@ class ProductosController:
 
         producto = Producto(0, nombre.strip(), categoria.strip().lower(),
                             float(precio), float(costo), int(tiempo_preparacion))
+
+        historial.push(f"Producto creado: {nombre}", deepcopy(Global.productos), "productos")
+
         return self.repo.agregar(producto)
 
     def obtener_todos(self):
@@ -43,6 +51,8 @@ class ProductosController:
         if tiempo_preparacion and not Validador.tiempo_preparacion(tiempo_preparacion):
             return "Tiempo de preparación inválido. Debe ser un número entre 1 y 180 minutos"
 
+        historial.push(f"Producto actualizado: ID {id}", deepcopy(Global.productos), "productos")
+
         producto = Producto(
             id,
             nombre.strip() if nombre else None,
@@ -62,6 +72,9 @@ class ProductosController:
             id = int(id)
         except ValueError:
             return f"El id no tiene un formato correcto"
+
+        historial.push(f"Producto eliminado: ID {id}", deepcopy(Global.productos), "productos")
+
         if not self.repo.borrar(id):
             return f"No se encontró el registro con el id: {id}"
         return True

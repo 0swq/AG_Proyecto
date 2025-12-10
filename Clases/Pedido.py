@@ -1,12 +1,11 @@
 from datetime import datetime
 import math
-
 from Global import Global
+from Utils.Validador import Validador
 
 
 class Pedido:
-    def __init__(self, id, cliente, detalles,
-                 tipo="salon", estado="pendiente", prioridad=1):
+    def __init__(self, id, cliente, detalles, tipo="salon", estado="pendiente", prioridad=1):
         self.id = id
         self.cliente = cliente
         self.empleado = Global.usuario_actual
@@ -18,11 +17,7 @@ class Pedido:
         self.tiempo_preparacion = max((d.tiempo_total for d in self.detalles if d.tiempo_total is not None), default=0)
         self.fecha = datetime.now()
         self.prioridad = prioridad
-        tiempos_permitidos = {
-            "salon": 40,
-            "para_llevar": 25,
-        }
-        tiempo_permitido = tiempos_permitidos.get(self.tipo, 40)
+        tiempo_permitido = Validador.tiempo_permitido_pedido(self.tipo)
         self.deadline = math.ceil(tiempo_permitido / 5)
 
     def __str__(self):

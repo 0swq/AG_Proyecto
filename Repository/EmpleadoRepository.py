@@ -8,8 +8,9 @@ from Estructuras.Arboles import construir_arbol, buscar
 class EmpleadoRepository:
     historial_recientes = deque(maxlen=10)
 
-    def __init__(self):
-        self.empleados = Global.empleados
+    @property
+    def empleados(self):
+        return Global.empleados
 
     def agregar(self, empleado: Empleado):
         Global.ultimo_id_empleado += 1
