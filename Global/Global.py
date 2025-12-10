@@ -1,5 +1,5 @@
 
-#Esta clase esta hecha para contener datos en memoria de forma global y centrailzada
+#Esta clase está hecha para contener datos en memoria de forma global y centrailzada
 
 usuario_actual = None
 

@@ -8,27 +8,47 @@ class HistorialPila:
     @property
     def historial(self):
         return Global.historial
+
     def push(self, operacion, lista, clase):
         self.historial.append(
             {operacion: [lista, clase, datetime.now()]}
         )
         while len(self.historial) > 10:
             del self.historial[0]
+
     def pop(self):
         if not self.historial:
             return None
+
         ultima_accion = self.historial.pop()
         operacion = list(ultima_accion.keys())[0]
         lista, clase, fecha = ultima_accion[operacion]
+
         if clase == "cola":
             Global.pedidos = lista[0]
             Global.cabeza_cola_pedidos = lista[1]
             Global.cola_cola_pedidos = lista[2]
-            Global.facturas=lista[3]
-            Global.boletas=lista[4]
+            Global.facturas = lista[3]
+            Global.boletas = lista[4]
+            Global.raiz_pedidos = None
+
+        elif clase == "pedidos":
+            Global.pedidos = lista
+
+            from Estructuras.Colas import PedidosCola
+            cola_temp = PedidosCola()
+
+            for pedido in Global.pedidos:
+                if pedido.estado == "pendiente":
+                    cola_temp.insertar_pedido(pedido)
+
+            Global.raiz_pedidos = None
+
         else:
             setattr(Global, clase, lista)
+
         return [operacion, clase, fecha]
+
     def obtener_invertido(self):
         resultado = []
         for i, elemento in enumerate(reversed(self.historial), start=1):

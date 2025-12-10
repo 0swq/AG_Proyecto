@@ -22,10 +22,15 @@ class PedidosController:
         if not cliente:
             return "Debe proporcionar un cliente"
 
+        historial.push(
+            f"Pedido creado",
+            [deepcopy(Global.pedidos), deepcopy(Global.cabeza_cola_pedidos),
+             deepcopy(Global.cola_cola_pedidos), deepcopy(Global.facturas),
+             deepcopy(Global.boletas)],
+            "cola"
+        )
+
         pedido = Pedido(0, cliente, detalles, tipo.lower().strip(), estado.lower().strip(), int(prioridad))
-
-        historial.push(f"Pedido creado", deepcopy(Global.pedidos), "pedidos")
-
         return self.repo.agregar(pedido)
 
     def obtener_todos(self):
@@ -53,7 +58,13 @@ class PedidosController:
         if isinstance(pedido_actual, str):
             return pedido_actual
 
-        historial.push(f"Pedido actualizado: ID {id}", deepcopy(Global.pedidos), "pedidos")
+        historial.push(
+            f"Pedido actualizado: ID {id}",
+            [deepcopy(Global.pedidos), deepcopy(Global.cabeza_cola_pedidos),
+             deepcopy(Global.cola_cola_pedidos), deepcopy(Global.facturas),
+             deepcopy(Global.boletas)],
+            "cola"
+        )
 
         pedido_nuevo = Pedido(id, cliente, detalles, tipo, estado, prioridad)
         resultado = self.repo.actualizar(id, pedido_actual, pedido_nuevo)
@@ -68,7 +79,13 @@ class PedidosController:
         except ValueError:
             return "El id no tiene un formato correcto"
 
-        historial.push(f"Pedido eliminado: ID {id}", deepcopy(Global.pedidos), "pedidos")
+        historial.push(
+            f"Pedido eliminado: ID {id}",
+            [deepcopy(Global.pedidos), deepcopy(Global.cabeza_cola_pedidos),
+             deepcopy(Global.cola_cola_pedidos), deepcopy(Global.facturas),
+             deepcopy(Global.boletas)],
+            "cola"
+        )
 
         if not self.repo.borrar(id):
             return f"No se encontró el registro con el id: {id}"
