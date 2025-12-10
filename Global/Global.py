@@ -32,9 +32,9 @@ raiz_productos = None
 raiz_pedidos = None
 
 categorias = ['entrada', 'plato_principal', 'postre', 'bebida']
-tipos_validos =['salon', 'llevar']
+tipos_validos =['salon', 'llevar, delivery']
 metodos_validos = ['efectivo', 'tarjeta', 'transferencia']
-
+roles = ['admin', 'cajero']
 
 class Nodo:
     def __init__(self,valor):

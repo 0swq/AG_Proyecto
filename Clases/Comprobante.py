@@ -24,10 +24,18 @@ class Boleta(ComprobanteInterface):
         self.cliente_nombre = pago.pedido.cliente
 
     def __str__(self):
-        cliente_info = f", cliente='{self.cliente_nombre}'" if self.cliente_nombre else ""
-        return (f"Boleta(id={self.id}, numero='{self.numero_comprobante}', "
-                f"total={self.total:.2f}{cliente_info}, "
-                f"fecha='{self.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}')")
+        componentes = [
+            f"Tipo: Boleta",
+            f"ID: {self.id}",
+            f"N°: {self.numero_comprobante}",
+            f"Total: {self.total:.2f}",
+            f"Fecha: {self.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}"
+        ]
+
+        if self.cliente_nombre:
+            componentes.append(f"Cliente: {self.cliente_nombre}")
+
+        return " ➜ ".join(componentes)
 
 
 class Factura(ComprobanteInterface):
@@ -38,7 +46,14 @@ class Factura(ComprobanteInterface):
         self.razon_social = razon_social
 
     def __str__(self):
-        return (f"Factura(id={self.id}, numero='{self.numero_comprobante}', "
-                f"total={self.total:.2f}, ruc='{self.ruc}', "
-                f"razon_social='{self.razon_social}', "
-                f"fecha='{self.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}')")
+        componentes = [
+            f"Tipo: Factura",
+            f"ID: {self.id}",
+            f"N°: {self.numero_comprobante}",
+            f"Total: {self.total:.2f}",
+            f"RUC: {self.ruc}",
+            f"Razón Social: {self.razon_social}",
+            f"Fecha: {self.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}"
+        ]
+
+        return " ➜ ".join(componentes)

@@ -23,6 +23,9 @@ class ClientesRepository:
     def buscar_id(self,id):
         Global.raiz_clientes = construir_arbol(Global.clientes, 'id')
         return buscar(Global.raiz_clientes, id, 'id')
+    def buscar_dni(self,dni):
+        Global.raiz_clientes = construir_arbol(Global.clientes, 'dni')
+        return buscar(Global.raiz_clientes, dni, 'dni')
 
     def actualizar(self, id, cliente_nuevo: Cliente):
         cliente = next((c for c in self.clientes if c.id == id), None)

@@ -12,6 +12,15 @@ class Producto:
         return self.__str__()
 
     def __str__(self):
-        return (f"Producto(id={self.id}, nombre='{self.nombre}', categoria='{self.categoria}', "
-                f"precio={self.precio}, costo={self.costo}, prep={self.tiempo_preparacion}min, "
-                f"rent={self.rentabilidad})")
+        componentes = [
+            f"ID: {self.id}",
+            f"Nombre: {self.nombre}",
+            f"Categoría: {self.categoria}",
+            f"Precio: {self.precio:.2f}",
+            f"Costo: {self.costo:.2f}",
+            f"Preparación: {self.tiempo_preparacion}min",
+            f"Rentabilidad: {self.rentabilidad:.2f}"
+            if self.rentabilidad is not None else "Rentabilidad: N/A"
+        ]
+
+        return " ➜ ".join(componentes)

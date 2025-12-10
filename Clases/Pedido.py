@@ -26,7 +26,18 @@ class Pedido:
         self.deadline = math.ceil(tiempo_permitido / 5)
 
     def __str__(self):
-        return (f"Pedido(id={self.id}, cliente={self.cliente if self.cliente else 'Sin cliente'}, "
-                f"empleado={self.empleado.nombre if self.empleado else 'Sin empleado'}, total={self.total}, "
-                f"prep={self.tiempo_preparacion}min, deadline={self.deadline}, "
-                f"valor={self.valor}, estado='{self.estado}')")
+        componentes = [
+            f"ID: {self.id}",
+            f"Cliente: {self.cliente if self.cliente else 'Sin cliente'}",
+            f"Empleado: {self.empleado.nombre if self.empleado else 'Sin empleado'}",
+            f"Tipo: {self.tipo}",
+            f"Estado: {self.estado}",
+            f"Total: {self.total:.2f}",
+            f"Valor: {self.valor:.2f}",
+            f"Preparación: {self.tiempo_preparacion}min",
+            f"Deadline: {self.deadline}",
+            f"Fecha: {self.fecha.strftime('%Y-%m-%d %H:%M:%S')}",
+            f"Prioridad: {self.prioridad}",
+            f"Items: {len(self.detalles)}"
+        ]
+        return " ➜ ".join(componentes)

@@ -8,15 +8,22 @@ class Pago:
         self.id = id
         self.pedido = pedido
         self.empleado = Global.usuario_actual
-        self.monto = sum(d.subtotal for d in pedido.detalles if d.subtotal is not None) if pedido and pedido.detalles else 0
         self.metodo = metodo
         self.estado = estado
         self.fecha = datetime.now()
+        self.monto = sum(d.subtotal for d in pedido.detalles if d.subtotal is not None) if pedido and pedido.detalles else 0
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-        return (f"Pago(id={self.id}, pedido={self.pedido.id if self.pedido else 'Sin pedido'}, "
-                f"empleado={self.empleado.nombre if self.empleado else 'Sin empleado'}, "
-                f"monto={self.monto:.2f}, metodo='{self.metodo}', estado='{self.estado}')")
+        componentes = [
+            f"ID: {self.id}",
+            f"Pedido: {self.pedido.id if self.pedido else 'Sin pedido'}",
+            f"Empleado: {self.empleado.nombre if self.empleado else 'Sin empleado'}",
+            f"Monto: {self.monto:.2f}",
+            f"Método: {self.metodo}",
+            f"Estado: {self.estado}",
+            f"Fecha: {self.fecha.strftime('%Y-%m-%d %H:%M:%S')}"
+        ]
+        return " ➜ ".join(componentes)

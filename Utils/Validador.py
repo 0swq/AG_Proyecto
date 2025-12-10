@@ -10,9 +10,25 @@ class Validador:
         return bool(re.match(pattern, nombre.strip()))
 
     @staticmethod
+    def dni(dni: str) -> bool:
+        if not dni or not dni.strip():
+            return False
+        dni = dni.strip()
+        pattern = r"^\d{8}$"
+        return bool(re.match(pattern, dni))
+
+    @staticmethod
     def telefono(telefono: str) -> bool:
+        if not telefono or not telefono.strip():
+            return False
         pattern = r"^\+?\d{7,15}$"
         return bool(re.match(pattern, telefono.strip()))
+
+    @staticmethod
+    def direccion(direccion: str) -> bool:
+        if not direccion or not direccion.strip():
+            return False
+        return 5 <= len(direccion.strip()) <= 200
 
     @staticmethod
     def usuario(usuario: str) -> bool:
@@ -37,7 +53,7 @@ class Validador:
 
     @staticmethod
     def rol(rol: str) -> bool:
-        roles_validos = ['administrador', 'cajero', 'cocinero']
+        roles_validos = Global.roles
         return rol.lower().strip() in roles_validos
 
     @staticmethod

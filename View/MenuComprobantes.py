@@ -11,6 +11,7 @@ detalle_controller = DetallePedidoController()
 factura_controller = FacturaController()
 boleta_controller = BoletaController()
 
+
 def menu_comprobantes():
     while True:
         limpiar_consola()
@@ -87,19 +88,19 @@ def ver_boletas():
 
     try:
         comprobantes = boleta_controller.obtener_todos()
-        boletas_list = [b for b in comprobantes if hasattr(b, 'cliente_nombre')]
+        boletas_list = [b for b in comprobantes if not hasattr(b, 'ruc')]
 
         if not boletas_list:
             mostrar_mensaje("advertencia", "No hay boletas registradas")
             input("\nPresiona cualquier tecla para continuar...")
             return
 
-        print(f"\n{'ID':<5} {'Número':<15} {'Cliente':<30} {'Total':<12} {'Fecha':<20}")
-        print("-" * 90)
+        print(f"\n{'ID':<5} {'Número':<20} {'Cliente DNI':<15} {'Total':<12} {'Fecha':<20}")
+        print("-" * 80)
         for boleta in boletas_list:
             fecha_str = boleta.fecha_emision.strftime('%Y-%m-%d %H:%M')
-            cliente = boleta.cliente_nombre if boleta.cliente_nombre else "Sin cliente"
-            print(f"{boleta.id:<5} {boleta.numero_comprobante:<15} {cliente:<30} "
+            cliente_dni = boleta.pago.pedido.cliente.dni if boleta.pago and boleta.pago.pedido and boleta.pago.pedido.cliente else "Sin cliente"
+            print(f"{boleta.id:<5} {boleta.numero_comprobante:<20} {cliente_dni:<15} "
                   f"S/. {boleta.total:<8.2f} {fecha_str:<20}")
 
         print(f"\nTotal de boletas: {len(boletas_list)}")
@@ -145,7 +146,8 @@ def imprimir_factura_detallada(factura):
     if factura.pago and factura.pago.pedido:
         pedido = factura.pago.pedido
         print(f"║ Pedido ID:     {pedido.id:<63} ║")
-        print(f"║ Cliente:       {pedido.cliente if pedido.cliente else 'Sin cliente':<63} ║")
+        cliente_dni = pedido.cliente.dni if pedido.cliente else "Sin cliente"
+        print(f"║ Cliente DNI:   {cliente_dni:<63} ║")
         print(f"║ Tipo:          {pedido.tipo.capitalize():<63} ║")
         print(f"║ Empleado:      {pedido.empleado.nombre if pedido.empleado else 'Sin empleado':<63} ║")
         print("╠" + "═" * 78 + "╣")
@@ -187,8 +189,8 @@ def imprimir_boleta_detallada(boleta):
     print("╠" + "═" * 78 + "╣")
     print("║" + " " * 25 + "DATOS DEL CLIENTE" + " " * 36 + "║")
     print("╠" + "═" * 78 + "╣")
-    cliente_nombre = boleta.cliente_nombre if boleta.cliente_nombre else "Sin especificar"
-    print(f"║ Cliente: {cliente_nombre:<68} ║")
+    cliente_dni = boleta.pago.pedido.cliente.dni if boleta.pago and boleta.pago.pedido and boleta.pago.pedido.cliente else "Sin especificar"
+    print(f"║ Cliente DNI: {cliente_dni:<64} ║")
     print("╠" + "═" * 78 + "╣")
     print("║" + " " * 25 + "DETALLE DEL PEDIDO" + " " * 35 + "║")
     print("╠" + "═" * 78 + "╣")

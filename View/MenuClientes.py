@@ -45,9 +45,20 @@ def registrar_cliente():
     try:
         print("Ingrese los datos del cliente:")
         print("-" * 50)
-        nombre = input("Nombre completo: ").strip()
-        telefono = input("Teléfono: ").strip()
-        resultado = cliente_controller.crear(nombre, telefono)
+        dni = input("DNI (8 dígitos): ").strip()
+        prueba = pedir_confirmacion("¿Desea agregar telefono y direccion? Estos datos son exclusivos para el delivery")
+        print("\nDatos opcionales (para delivery):")
+        telefono = None
+        direccion = None
+        if prueba:
+            telefono = input("Teléfono (opcional): ").strip()
+            direccion = input("Dirección (opcional): ").strip()
+        resultado = cliente_controller.crear(
+            dni,
+            telefono if telefono else None,
+            direccion if direccion else None
+        )
+
         if type(resultado) is str:
             mostrar_mensaje("error", f"✗ No se pudo registrar el cliente, motivo: {resultado}")
         else:
@@ -70,10 +81,13 @@ def listar_clientes():
         if not clientes:
             mostrar_mensaje("advertencia", "No hay clientes registrados")
         else:
-            print(f"\n{'ID':<25} {'Nombre':<30} {'Teléfono':<15}")
-            print("-" * 70)
+            print(f"\n{'ID':<5} {'DNI':<12} {'Teléfono':<15} {'Dirección':<40}")
+            print("-" * 80)
             for cliente in clientes:
-                print(f"{cliente.id:<25} {cliente.nombre:<30} {cliente.telefono:<15}")
+                telefono = cliente.telefono if cliente.telefono else "N/A"
+                direccion = cliente.direccion if cliente.direccion else "N/A"
+                direccion_corta = direccion[:37] + "..." if len(direccion) > 40 else direccion
+                print(f"{cliente.id:<5} {cliente.dni:<12} {telefono:<15} {direccion_corta:<40}")
             print(f"\nTotal de clientes: {len(clientes)}")
     except Exception as e:
         mostrar_mensaje("error", f"Error al listar clientes: {str(e)}")
@@ -88,11 +102,11 @@ def buscar_cliente():
     print("=" * 50)
     print()
     try:
-        id_solicitado = input("ID del cliente a buscar: ")
-        cliente = cliente_controller.buscar_id(id_solicitado)
+        dni_solicitado = input("DNI del cliente a buscar: ")
+        cliente = cliente_controller.buscar_dni(dni_solicitado)
 
         if cliente is None:
-            mostrar_mensaje("error", f"No se encontró el cliente con ID: {id_solicitado}")
+            mostrar_mensaje("error", f"No se encontró el cliente con DNI: {dni_solicitado}")
         elif type(cliente) is str:
             mostrar_mensaje("error", cliente)
         else:
@@ -110,8 +124,7 @@ def editar_cliente():
     print("         EDITAR CLIENTE")
     print("=" * 50)
     print()
-    mostrar_mensaje("info",
-                    f"Se procedera a listar todos los clientes registrados, escribe el id del que desees editar")
+    mostrar_mensaje("info", "Se procederá a listar todos los clientes registrados, escribe el id del que desees editar")
 
     listar_clientes()
     print("         ESCRIBE EL ID DE UN CLIENTE PARA EDITARLO")
@@ -138,13 +151,21 @@ def editar_cliente():
         print("=" * 50)
         print()
         mostrar_mensaje("info", "Deja en blanco los atributos que no quieras modificar")
-        nombre = input("Nombre completo: ").strip()
-        telefono = input("Telefono: ").strip()
-        if not nombre and not telefono:
+        mostrar_mensaje("info", "Si modificas teléfono o dirección, debes proporcionar ambos")
+        dni = input("DNI (8 dígitos): ").strip()
+        telefono = input("Teléfono: ").strip()
+        direccion = input("Dirección: ").strip()
+
+        if not dni and not telefono and not direccion:
             mostrar_mensaje("advertencia", "No se realizaron cambios")
         else:
-            resultado = cliente_controller.actualizar(id_solicitado, nombre if nombre else None,
-                                                      telefono if telefono else None)
+            resultado = cliente_controller.actualizar(
+                id_solicitado,
+                dni if dni else None,
+                telefono if telefono else None,
+                direccion if direccion else None
+            )
+
             if type(resultado) is str:
                 mostrar_mensaje("error", resultado)
             else:
@@ -161,7 +182,7 @@ def eliminar_cliente():
     print("         ELIMINAR CLIENTE")
     print("=" * 50)
     mostrar_mensaje("info",
-                    f"Se procedera a listar todos los clientes registrados, escribe el id del que desees eliminar")
+                    "Se procederá a listar todos los clientes registrados, escribe el id del que desees eliminar")
 
     listar_clientes()
     print("         ESCRIBE EL ID DE UN CLIENTE PARA ELIMINARLO")
@@ -181,12 +202,15 @@ def eliminar_cliente():
             input("\nPresiona cualquier tecla para continuar...")
             return
 
-        prueba_uno = pedir_confirmacion(f"Estas realmente seguro de eliminar el cliente (I): {cliente}")
-        if not prueba_uno: return
-        prueba_dos = pedir_confirmacion(f"Estas realmente seguro de eliminar el cliente (II): {cliente}")
-        if not prueba_dos: return
-        prueba_tres = pedir_confirmacion(f"Estas realmente seguro de eliminar el cliente (III): {cliente}")
-        if not prueba_tres: return
+        prueba_uno = pedir_confirmacion(f"¿Estás realmente seguro de eliminar el cliente (I): {cliente}?")
+        if not prueba_uno:
+            return
+        prueba_dos = pedir_confirmacion(f"¿Estás realmente seguro de eliminar el cliente (II): {cliente}?")
+        if not prueba_dos:
+            return
+        prueba_tres = pedir_confirmacion(f"¿Estás realmente seguro de eliminar el cliente (III): {cliente}?")
+        if not prueba_tres:
+            return
 
         resultado = cliente_controller.eliminar(id_solicitado)
         if type(resultado) is str:

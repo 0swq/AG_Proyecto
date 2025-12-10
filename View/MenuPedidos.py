@@ -2,6 +2,7 @@ from Clases.Comprobante import Boleta
 from Clases.DetallePedido import DetallePedido
 from Clases.Pago import Pago
 from Controller.BoletaController import BoletaController
+from Controller.ClienteController import ClientesController
 from Controller.DetallePedidoController import DetallePedidoController
 from Controller.FacturaController import FacturaController
 from Controller.PagoController import PagoController
@@ -23,6 +24,9 @@ detalle_controller = DetallePedidoController()
 pago_controller = PagoController()
 factura_controller = FacturaController()
 boleta_controller = BoletaController()
+cliente_controller = ClientesController()
+
+
 def menu_pedidos():
     while True:
         limpiar_consola()
@@ -65,21 +69,24 @@ def crear_pedido():
     print()
 
     try:
-        print("Ingrese los datos del pedido:")
-        print("-" * 50)
-
-        mostrar_mensaje("advertencia", "Debes escribir el nombre del cliente")
-        cliente = input("Ingrese el nombre del cliente: ").strip()
-        if not Validador.nombre(cliente):
-            mostrar_mensaje("error", "Nombre inválido")
+        if len(Global.clientes) == 0:
+            mostrar_mensaje("advertencia", "No se puede proceder, no hay clientes registrados")
+            input("\nPresiona cualquier tecla para continuar...")
+            return
+        if len(Global.productos) == 0:
+            mostrar_mensaje("advertencia", "No se puede proceder, no hay productos registrados")
+            input("\nPresiona cualquier tecla para continuar...")
             return
 
+        print("Ingrese los datos del pedido:")
+        print("-" * 50)
         detalles = []
         while True:
             prueba = pedir_confirmacion("¿Deseas agregar un producto al pedido?")
             if not prueba:
                 if len(detalles) == 0:
                     mostrar_mensaje("error", "Debe agregar al menos un producto")
+                    input("\nPresiona cualquier tecla para continuar...")
                     return
                 break
 
@@ -106,15 +113,65 @@ def crear_pedido():
             mostrar_mensaje("exito", f"Producto agregado: {detalle}")
 
         mostrar_mensaje("info", "Indica el tipo de pedido")
-        print("Tipos disponibles: salon, para llevar")
+        print("Tipos disponibles:", ", ".join(Global.tipos_validos))
         tipo = input("Ingrese el tipo: ").strip().lower()
-        while tipo != "salon" and tipo != "para llevar":
-            mostrar_mensaje("error", "Tipo inválido. Debe ser 'salon' o 'para llevar'")
+        while tipo not in Global.tipos_validos:
+            mostrar_mensaje("error", f"Tipo inválido. Debe ser uno de: {', '.join(Global.tipos_validos)}")
             tipo = input("Ingrese el tipo: ").strip().lower()
+
+        cliente = None
+        while True:
+            mostrar_mensaje("advertencia", "Debes escribir el DNI del cliente")
+            dni = input("Ingrese el DNI del cliente: ").strip()
+            if not Validador.dni(dni):
+                mostrar_mensaje("error", "El DNI es inválido")
+                continue
+
+            cliente = cliente_controller.buscar_dni(dni)
+            if type(cliente) is str:
+                prueba = pedir_confirmacion("No se encontró, ¿volver a intentar?")
+                if prueba:
+                    continue
+                else:
+                    mostrar_mensaje("error", "No se encontró el cliente, por favor regístrelo.")
+                    input("\nPresiona cualquier tecla para continuar...")
+                    return
+            break
+
+        if (not cliente.telefono or not cliente.direccion) and tipo == "delivery":
+            mostrar_mensaje("error", "Este cliente no tiene teléfono y/o dirección para realizar delivery")
+            prueba = pedir_confirmacion("¿Agregar datos?, en caso de presionar no se cancelará la operación totalmente")
+            if prueba:
+                telefono = None
+                direccion = None
+                while True:
+                    telefono = input("Ingrese el teléfono: ").strip()
+                    direccion = input("Ingrese la dirección: ").strip()
+
+                    if not Validador.telefono(telefono):
+                        mostrar_mensaje("error", "Teléfono inválido. Debe contener 7-15 dígitos")
+                        continue
+                    if not Validador.direccion(direccion):
+                        mostrar_mensaje("error", "Dirección inválida. Debe contener entre 5 y 200 caracteres")
+                        continue
+                    break
+
+                resultado_actualizar = cliente_controller.actualizar(cliente.id, None, telefono, direccion)
+                if type(resultado_actualizar) is str:
+                    mostrar_mensaje("error", resultado_actualizar)
+                    input("\nPresiona cualquier tecla para continuar...")
+                    return
+
+                cliente = cliente_controller.buscar_id(cliente.id)
+                mostrar_mensaje("exito", "Datos del cliente actualizados correctamente")
+            else:
+                mostrar_mensaje("info", "Operación cancelada")
+                input("\nPresiona cualquier tecla para continuar...")
+                return
 
         mostrar_mensaje("info", "Debe asignar una prioridad 1-5")
         prioridad = 0
-        while prioridad < 1 or prioridad > 5:
+        while not Validador.prioridad(prioridad):
             try:
                 prioridad = int(input("Ingrese la prioridad (1-5): "))
                 if prioridad < 1 or prioridad > 5:
@@ -148,13 +205,14 @@ def mostrar_cola():
         if not pedidos:
             mostrar_mensaje("advertencia", "No hay pedidos registrados")
         else:
+            print(Global.usuario_actual)
             print(
                 f"\n{'ID':<5} {'Cliente':<20} {'Empleado':<20} {'Tipo':<12} {'Estado':<15} {'Total':<10} {'Prior':<6}")
             print("-" * 95)
             for pedido in pedidos:
-                cliente_nombre = pedido.cliente if pedido.cliente else "Sin cliente"
+                cliente_dni = pedido.cliente.dni if pedido.cliente else "Sin cliente"
                 empleado_nombre = pedido.empleado.nombre if pedido.empleado else "Sin empleado"
-                print(f"{pedido.id:<5} {cliente_nombre:<20} {empleado_nombre:<20} "
+                print(f"{pedido.id:<5} {cliente_dni:<20} {empleado_nombre:<20} "
                       f"{pedido.tipo:<12} {pedido.estado:<15} {pedido.total:<10.2f} {pedido.prioridad:<6}")
             print(f"\nTotal de pedidos: {len(pedidos)}")
     except Exception as e:
@@ -251,6 +309,7 @@ def completar_pedido():
 
             elif op == "3":
                 mostrar_mensaje("info", "Operación cancelada")
+                input("\nPresiona cualquier tecla para continuar...")
                 return
 
             else:
@@ -269,6 +328,7 @@ def completar_pedido():
     print()
     input("Presiona cualquier tecla para continuar...")
 
+
 def buscar_pedido():
     limpiar_consola()
     print("         BUSCAR PEDIDO")
@@ -279,21 +339,11 @@ def buscar_pedido():
         pedido = pedido_controller.buscar_id(id_solicitado)
 
         if pedido is None:
-            mostrar_mensaje("error", f"No se encontró el pedido con ID: {id_solicitado}")
+            mostrar_mensaje("error", f"No se encontró el pedido")
         elif type(pedido) is str:
             mostrar_mensaje("error", pedido)
         else:
-            print("\nPedido encontrado:")
             print(pedido)
-            print(f"\nDetalles del pedido:")
-            print(f"  - Cliente: {pedido.cliente if pedido.cliente else 'Sin cliente'}")
-            print(f"  - Empleado: {pedido.empleado.nombre if pedido.empleado else 'Sin empleado'}")
-            print(f"  - Tipo: {pedido.tipo}")
-            print(f"  - Estado: {pedido.estado}")
-            print(f"  - Total: S/. {pedido.total:.2f}")
-            print(f"  - Tiempo preparación: {pedido.tiempo_preparacion} min")
-            print(f"  - Prioridad: {pedido.prioridad}")
-            print(f"  - Cantidad de productos: {len(pedido.detalles)}")
     except Exception as error:
         mostrar_mensaje("error", f"Error al buscar: {str(error)}")
 
@@ -305,9 +355,7 @@ def cancelar_pedido():
     limpiar_consola()
     print("         CANCELAR PEDIDO")
     print("=" * 50)
-    mostrar_mensaje("info", "Se procederá a listar todos los pedidos, escribe el id del que desees cancelar")
-
-    ver_pedidos()
+    print()
     print("         PRÓXIMO PEDIDO EN COLA")
     print("=" * 50)
     print()
@@ -318,10 +366,15 @@ def cancelar_pedido():
             input("\nPresiona cualquier tecla para continuar...")
             return
 
-        prueba_uno = pedir_confirmacion(f"¿Estás seguro de cancelar el pedido (I): {pedido}?")
-        if not prueba_uno: return
-        prueba_dos = pedir_confirmacion(f"¿Estás seguro de cancelar el pedido (II): {pedido}?")
-        if not prueba_dos: return
+        print(pedido)
+        print()
+
+        prueba_uno = pedir_confirmacion(f"¿Estás seguro de cancelar el pedido (I)?")
+        if not prueba_uno:
+            return
+        prueba_dos = pedir_confirmacion(f"¿Estás seguro de cancelar el pedido (II)?")
+        if not prueba_dos:
+            return
 
         pedido = pedidos_cola.cancelar_pedido()
         if pedido:
@@ -345,7 +398,8 @@ def optimizar_cola():
         input("Presiona cualquier tecla para la optimización...")
         prueba = pedir_confirmacion(
             "¿Desea optimizar la cola de pedidos?, eso modificará su orden y no será posible revertirlo")
-        if not prueba: return
+        if not prueba:
+            return
         mostrar_mensaje("advertencia",
                         "Se optimizará la cola buscando el mejor orden posible para maximizar rentabilidad acorde a los tiempos")
         pedidos_cola.JobSequence()
@@ -364,7 +418,6 @@ def optimizar_cola():
 
     print()
     input("Presiona cualquier tecla para continuar...")
-
 
 def ver_pedidos():
     limpiar_consola()
